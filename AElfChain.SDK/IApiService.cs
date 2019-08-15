@@ -7,6 +7,7 @@ namespace AElfChain.SDK
 {
     public interface IApiService
     {
+        string GetServiceUrl();
         Task<string> ExecuteTransactionAsync(string rawTransaction);
 
         Task<TResult> ExecuteTransactionAsync<TResult>(string rawTransaction) where TResult : IMessage<TResult>, new();
@@ -40,5 +41,11 @@ namespace AElfChain.SDK
         Task<List<TaskQueueInfoDto>> GetTaskQueueStatusAsync();
 
         Task<RoundDto> GetCurrentRoundInformationAsync();
+
+        Task<bool> AddPeerAsync(string address);
+
+        Task<bool> RemovePeerAsync(string address);
+
+        Task<List<PeerDto>> GetPeersAsync();
     }
 }

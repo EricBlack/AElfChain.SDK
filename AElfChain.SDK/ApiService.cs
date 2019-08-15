@@ -9,18 +9,23 @@ namespace AElfChain.SDK
     public class ApiService : IApiService
     {
         private readonly string _baseUrl;
-        private Dictionary<ApiMethods, string> _apiRoute;
         private readonly IHttpService _httpService;
+        private Dictionary<ApiMethods, string> _apiRoute;
 
         public ApiService(SdkOption sdkOption)
         {
-            _baseUrl = sdkOption.ServiceUrl;
+            _baseUrl = FormatServiceUrl(sdkOption.ServiceUrl);
             _httpService = new HttpService(sdkOption.TimeoutSeconds, sdkOption.FailReTryTimes);
             
             InitializeWebApiRoute();
         }
         
         #region Chain Api
+
+        public string GetServiceUrl()
+        {
+            return _baseUrl;
+        }
 
         public async Task<string> ExecuteTransactionAsync(string rawTransaction)
         {
@@ -167,7 +172,7 @@ namespace AElfChain.SDK
 
         #region Net api
 
-        public async Task<bool> AddPeer(string address)
+        public async Task<bool> AddPeerAsync(string address)
         {
             var url = GetRequestUrl(ApiMethods.AddPeer);
             var parameters = new Dictionary<string, string>
@@ -178,19 +183,27 @@ namespace AElfChain.SDK
             return await _httpService.PostResponseAsync<bool>(url, parameters);
         }
 
-        public async Task<bool> RemovePeer(string address)
+        public async Task<bool> RemovePeerAsync(string address)
         {
             var url = GetRequestUrl(ApiMethods.RemovePeer, address);
             return await _httpService.DeleteResponseAsObjectAsync<bool>(url);
         }
 
-        public async Task<List<PeerDto>> GetPeers()
+        public async Task<List<PeerDto>> GetPeersAsync()
         {
             var url = GetRequestUrl(ApiMethods.GetPeers);
             return await _httpService.GetResponseAsync<List<PeerDto>>(url);
         }
 
         #endregion
+
+        private string FormatServiceUrl(string serviceUrl)
+        {
+            if (serviceUrl.Contains("http://") || serviceUrl.Contains("https://"))
+                return serviceUrl;
+            
+            return $"http://{serviceUrl}";
+        }
         
         private string GetRequestUrl(ApiMethods api, params object[] parameters)
         {
